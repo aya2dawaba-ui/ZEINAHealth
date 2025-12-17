@@ -1,0 +1,8 @@
+{
+  "name": "Copy of Zeina - Women's Health Companion",
+  "description": "A premium, empowering health companion app for women featuring expert connections, health tools, and AI-driven guidance.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}
