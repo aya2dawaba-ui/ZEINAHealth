@@ -1,12 +1,20 @@
-
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getServices } from '../constants';
 import { useLanguage } from '../context/LanguageContext';
-import { X, MessageCircle, Send, Stethoscope, Star } from 'lucide-react';
+import { X, MessageCircle, Send, Stethoscope, Star, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import RatingModal from '../components/RatingModal';
 import { StorageService } from '../services/storage';
+
+const sectionFadeIn = {
+  hidden: { opacity: 0, y: 100 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } 
+  }
+};
 
 const Services: React.FC = () => {
   const { t, language, dir } = useLanguage();
@@ -71,13 +79,27 @@ const Services: React.FC = () => {
   };
 
   return (
-    <div className="pt-10 pb-20">
-      <section className="text-center px-6 mb-20">
-        <h1 className="text-5xl font-serif font-bold text-slate-900 mb-6">{t('ourServices')}</h1>
-        <p className="text-xl text-slate-600 max-w-2xl mx-auto">{t('servicesPageDesc')}</p>
+    <div className="pt-20 pb-40">
+      <section className="text-center px-6 mb-32">
+        <motion.h1 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          className="text-6xl md:text-8xl font-serif font-bold text-slate-900 mb-8 tracking-tighter"
+        >
+          {t('ourServices')}
+        </motion.h1>
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          className="text-2xl text-slate-400 max-w-3xl mx-auto font-light leading-relaxed"
+        >
+          {t('servicesPageDesc')}
+        </motion.p>
       </section>
 
-      <div className="max-w-7xl mx-auto px-6 space-y-32">
+      <div className="max-w-7xl mx-auto px-6 space-y-60">
         {services.map((service, idx) => {
           // Calculate dynamic rating
           const { rating, count } = StorageService.getAverageRating(service.id || '', service.rating || 5, service.reviewCount || 0);
@@ -90,55 +112,56 @@ const Services: React.FC = () => {
           ];
 
           return (
-            <div key={idx} className={`grid md:grid-cols-2 gap-16 items-center ${idx % 2 !== 0 ? 'md:grid-flow-col-dense' : ''}`}>
-              <motion.div 
-                initial={{ opacity: 0, x: idx % 2 === 0 ? -50 : 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className={idx % 2 !== 0 ? 'md:col-start-2' : ''}
-              >
-                 <div className="flex items-start justify-between mb-4">
-                    <div className="w-16 h-16 bg-zeina-100 rounded-2xl flex items-center justify-center text-zeina-700">
-                      <service.icon size={32} />
+            <motion.div 
+              key={idx} 
+              variants={sectionFadeIn}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              className={`grid md:grid-cols-2 gap-24 items-center ${idx % 2 !== 0 ? 'md:grid-flow-col-dense' : ''}`}
+            >
+              <div className={idx % 2 !== 0 ? 'md:col-start-2' : ''}>
+                 <div className="flex items-start justify-between mb-10">
+                    <div className="w-20 h-20 bg-zeina-50 rounded-[2rem] flex items-center justify-center text-zeina-600 shadow-xl shadow-zeina-100/50">
+                      <service.icon size={40} />
                     </div>
                     <div className="flex flex-col items-end">
-                       <div className="flex items-center gap-1 text-yellow-500 font-bold text-lg">
-                          <Star size={20} fill="currentColor" /> {rating}
+                       <div className="flex items-center gap-2 text-yellow-500 font-bold text-2xl">
+                          <Star size={24} fill="currentColor" /> {rating}
                        </div>
-                       <button onClick={() => openRating(service)} className="text-xs text-slate-400 underline hover:text-zeina-600">
+                       <button onClick={() => openRating(service)} className="text-[10px] font-black uppercase tracking-widest text-slate-400 underline hover:text-zeina-600 mt-2">
                           {t('rate')} ({count})
                        </button>
                     </div>
                  </div>
                  
-                 <h2 className="text-4xl font-serif font-bold mb-6">{service.title}</h2>
-                 <p className="text-lg text-slate-600 leading-relaxed mb-8">{service.description}</p>
-                 <ul className="space-y-4 mb-8">
-                   <li className="flex items-center gap-3 text-slate-700"><span className="w-2 h-2 rounded-full bg-zeina-500"/> {t('certifiedExpertise')}</li>
-                   <li className="flex items-center gap-3 text-slate-700"><span className="w-2 h-2 rounded-full bg-zeina-500"/> {t('access247')}</li>
-                   <li className="flex items-center gap-3 text-slate-700"><span className="w-2 h-2 rounded-full bg-zeina-500"/> {t('privacyGuaranteed')}</li>
+                 <h2 className="text-5xl md:text-6xl font-serif font-bold mb-10 text-slate-900 tracking-tight leading-tight">{service.title}</h2>
+                 <p className="text-2xl text-slate-500 leading-relaxed mb-12 font-light">{service.description}</p>
+                 <ul className="space-y-6 mb-16">
+                   <li className="flex items-center gap-5 text-xl text-slate-700 font-light"><CheckCircle className="text-zeina-500" size={24}/> {t('certifiedExpertise')}</li>
+                   <li className="flex items-center gap-5 text-xl text-slate-700 font-light"><CheckCircle className="text-zeina-500" size={24}/> {t('access247')}</li>
+                   <li className="flex items-center gap-5 text-xl text-slate-700 font-light"><CheckCircle className="text-zeina-500" size={24}/> {t('privacyGuaranteed')}</li>
                  </ul>
                  <button 
                    onClick={() => handleServiceClick(idx)}
-                   className="bg-slate-900 text-white px-8 py-3 rounded-full hover:bg-zeina-600 transition-colors"
+                   className="group relative bg-slate-900 text-white px-12 py-6 rounded-full font-black uppercase tracking-widest text-sm hover:bg-zeina-600 transition-all duration-700 overflow-hidden shadow-2xl"
                  >
-                   {t('getStarted')}
+                   <span className="relative z-10">{t('getStarted')}</span>
                  </button>
-              </motion.div>
+              </div>
               
               <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                className={`relative rounded-[3rem] overflow-hidden h-[500px] shadow-2xl shadow-purple-100 ${idx % 2 !== 0 ? 'md:col-start-1' : ''}`}
+                whileHover={{ scale: 1.02, rotate: idx % 2 === 0 ? 1 : -1 }}
+                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                className={`relative rounded-[4rem] overflow-hidden h-[650px] shadow-[0_60px_120px_-30px_rgba(0,0,0,0.15)] bg-slate-100 ${idx % 2 !== 0 ? 'md:col-start-1' : ''}`}
               >
                 <img 
                   src={serviceImages[idx % serviceImages.length]} 
                   alt={service.title} 
-                  className="w-full h-full object-cover" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[4s]" 
                 />
               </motion.div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
@@ -152,61 +175,62 @@ const Services: React.FC = () => {
                animate={{ opacity: 1 }} 
                exit={{ opacity: 0 }} 
                onClick={() => setIsGuidanceOpen(false)}
-               className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50"
+               className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl z-[60]"
              />
              <motion.div
                initial={{ opacity: 0, scale: 0.9, y: 50 }}
                animate={{ opacity: 1, scale: 1, y: 0 }}
                exit={{ opacity: 0, scale: 0.9, y: 50 }}
-               className="fixed inset-0 m-auto max-w-lg h-fit bg-white rounded-3xl p-8 z-50 shadow-2xl overflow-hidden"
+               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+               className="fixed inset-0 m-auto max-w-xl h-fit bg-white rounded-[3rem] p-12 z-[70] shadow-2xl overflow-hidden border border-white/20"
              >
-                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-zeina-400 to-zeina-600" />
+                <div className="absolute top-0 left-0 w-full h-3 bg-gradient-to-r from-zeina-400 to-zeina-600" />
                 
-                <div className="flex justify-between items-start mb-6">
+                <div className="flex justify-between items-start mb-10">
                    <div>
-                      <h2 className="text-2xl font-serif font-bold text-slate-900 flex items-center gap-2">
-                         {formType === 'guidance' ? <MessageCircle className="text-zeina-600" /> : <Stethoscope className="text-zeina-600" />}
+                      <h2 className="text-3xl font-serif font-bold text-slate-900 flex items-center gap-4">
+                         {formType === 'guidance' ? <MessageCircle className="text-zeina-600" size={32} /> : <Stethoscope className="text-zeina-600" size={32} />}
                          {formType === 'guidance' ? t('guidanceFormTitle') : t('expertFormTitle')}
                       </h2>
-                      <p className="text-sm text-slate-500 mt-2">
+                      <p className="text-lg text-slate-500 mt-4 leading-relaxed">
                         {formType === 'guidance' ? t('guidanceFormDesc') : t('expertFormDesc')}
                       </p>
                    </div>
-                   <button onClick={() => setIsGuidanceOpen(false)} className="p-2 hover:bg-slate-50 rounded-full text-slate-400 hover:text-slate-600">
-                      <X size={20} />
+                   <button onClick={() => setIsGuidanceOpen(false)} className="p-3 hover:bg-slate-50 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
+                      <X size={28} />
                    </button>
                 </div>
 
-                <form onSubmit={handleGuidanceSubmit} className="space-y-4">
-                   <div className="grid grid-cols-2 gap-4">
+                <form onSubmit={handleGuidanceSubmit} className="space-y-6">
+                   <div className="grid grid-cols-2 gap-6">
                       <div>
-                         <label className="block text-sm font-medium text-slate-700 mb-1">{t('lblName')}</label>
+                         <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{t('lblName')}</label>
                          <input 
                            type="text" 
                            required
                            value={formData.name}
                            onChange={e => setFormData({...formData, name: e.target.value})}
-                           className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-zeina-200"
+                           className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 focus:outline-none focus:border-zeina-200 focus:bg-white transition-all"
                          />
                       </div>
                       <div>
-                         <label className="block text-sm font-medium text-slate-700 mb-1">{t('lblAge')}</label>
+                         <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{t('lblAge')}</label>
                          <input 
                            type="number" 
                            required
                            value={formData.age}
                            onChange={e => setFormData({...formData, age: e.target.value})}
-                           className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-zeina-200"
+                           className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 focus:outline-none focus:border-zeina-200 focus:bg-white transition-all"
                          />
                       </div>
                    </div>
 
                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">{t('lblConcern')}</label>
+                      <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{t('lblConcern')}</label>
                       <select 
                          value={formData.concern}
                          onChange={e => setFormData({...formData, concern: e.target.value})}
-                         className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-zeina-200"
+                         className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 focus:outline-none focus:border-zeina-200 focus:bg-white transition-all appearance-none"
                       >
                          <option value="Skin">{t('optSkin')}</option>
                          <option value="Hair">{t('optHair')}</option>
@@ -217,25 +241,21 @@ const Services: React.FC = () => {
                    </div>
 
                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">{t('lblNotes')}</label>
+                      <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">{t('lblNotes')}</label>
                       <textarea 
-                         rows={3}
+                         rows={4}
                          value={formData.notes}
                          onChange={e => setFormData({...formData, notes: e.target.value})}
-                         className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-zeina-200 resize-none"
+                         className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 focus:outline-none focus:border-zeina-200 focus:bg-white transition-all resize-none"
                       />
                    </div>
 
                    <button 
                      type="submit" 
-                     className="w-full bg-[#25D366] text-white py-3.5 rounded-xl font-bold hover:bg-[#128C7E] transition-colors flex items-center justify-center gap-2 mt-2 shadow-lg shadow-green-100"
+                     className="w-full bg-[#25D366] text-white py-5 rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-[#128C7E] transition-all flex items-center justify-center gap-3 mt-4 shadow-xl shadow-green-200"
                    >
-                      <Send size={18} /> {t('sendWhatsApp')}
+                      <Send size={20} /> {t('sendWhatsApp')}
                    </button>
-                   
-                   <p className="text-center text-[10px] text-slate-400">
-                      {language === 'ar' ? 'سيتم توجيهك إلى تطبيق واتساب.' : 'You will be redirected to WhatsApp to send the message.'}
-                   </p>
                 </form>
              </motion.div>
           </>

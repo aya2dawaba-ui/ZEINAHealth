@@ -1,14 +1,18 @@
-
 import React from 'react';
-import { motion, Variants } from 'framer-motion';
-import { ArrowRight, ArrowUpRight, Star } from 'lucide-react';
+import { motion, useScroll, useTransform, useSpring, Variants } from 'framer-motion';
+import { ArrowRight, ArrowUpRight, Star, Sparkles, Activity, Heart, Stethoscope, BookOpen } from 'lucide-react';
 import { getServices, getExperts } from '../constants';
 import { NavLink } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 
 const fadeInUp: Variants = {
-  hidden: { opacity: 0, y: 60 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  hidden: { opacity: 0, y: 80, filter: 'blur(10px)' },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    filter: 'blur(0px)',
+    transition: { duration: 1.2, ease: [0.16, 1, 0.3, 1] } 
+  }
 };
 
 const staggerContainer: Variants = {
@@ -16,7 +20,8 @@ const staggerContainer: Variants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.2
+      staggerChildren: 0.15,
+      delayChildren: 0.3
     }
   }
 };
@@ -25,214 +30,221 @@ const Home: React.FC = () => {
   const { t, language, dir } = useLanguage();
   const services = getServices(language);
   const experts = getExperts(language);
+  
+  const { scrollYProgress } = useScroll();
+  const smoothProgress = useSpring(scrollYProgress, { stiffness: 40, damping: 15 });
+  
+  // Parallax transformations
+  const heroY = useTransform(smoothProgress, [0, 0.4], [0, -120]);
+  const heroScale = useTransform(smoothProgress, [0, 0.4], [1, 1.08]);
+  const textOpacity = useTransform(smoothProgress, [0, 0.25], [1, 0]);
 
   return (
-    <div className="overflow-hidden">
+    <div className="bg-warm-50 selection:bg-zeina-200">
       {/* HERO SECTION */}
-      <section className="relative min-h-[90vh] flex items-center pt-10 pb-20">
-        <div className="absolute inset-0 z-0">
-            <div className="absolute top-[-10%] right-[-5%] rtl:right-auto rtl:left-[-5%] w-[600px] h-[600px] bg-zeina-100/50 rounded-full blur-[100px]" />
-            <div className="absolute bottom-[10%] left-[-10%] rtl:left-auto rtl:right-[-10%] w-[500px] h-[500px] bg-lavender-100/50 rounded-full blur-[80px]" />
+      <section className="relative min-h-[110vh] flex items-center justify-center pt-24 overflow-hidden">
+        {/* Abstract Background Elements */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <motion.div 
+            style={{ y: useTransform(smoothProgress, [0, 1], [0, -400]), scale: 1.5 }}
+            className="absolute top-[-20%] right-[-10%] w-[1000px] h-[1000px] bg-zeina-100/40 rounded-full blur-[160px]" 
+          />
+          <motion.div 
+            style={{ y: useTransform(smoothProgress, [0, 1], [0, 400]) }}
+            className="absolute bottom-[-10%] left-[-15%] w-[800px] h-[800px] bg-indigo-50/50 rounded-full blur-[140px]" 
+          />
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 relative z-10 items-center">
+        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-24 relative z-10 items-center">
           <motion.div
             initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
+            animate="visible"
             variants={staggerContainer}
+            style={{ opacity: textOpacity }}
+            className="flex flex-col"
           >
-            <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm mb-6 border border-zeina-100">
-               <span className="flex h-2 w-2 rounded-full bg-zeina-500"></span>
-               <span className="text-xs font-semibold tracking-wide uppercase text-slate-500">{t('heroTagline')}</span>
+            <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-md px-5 py-2.5 rounded-full border border-zeina-100 mb-10 self-start shadow-sm">
+               <Sparkles className="text-zeina-500 w-4 h-4" />
+               <span className="text-[11px] font-black uppercase tracking-[0.3em] text-zeina-600">{t('heroTagline')}</span>
             </motion.div>
             
-            <motion.h1 variants={fadeInUp} className="text-5xl lg:text-7xl font-serif font-bold text-slate-900 leading-[1.1] mb-6 whitespace-pre-line">
-              {t('heroTitle')}
+            <motion.h1 variants={fadeInUp} className="text-7xl md:text-[10rem] font-serif font-black text-slate-900 leading-[0.85] mb-10 tracking-tighter">
+              {t('heroTitle').split('\n').map((line, i) => (
+                <span key={i} className="block">{line}</span>
+              ))}
             </motion.h1>
             
-            <motion.p variants={fadeInUp} className="text-lg text-slate-600 leading-relaxed mb-8 max-w-lg">
+            <motion.p variants={fadeInUp} className="text-2xl text-slate-500 leading-relaxed mb-14 max-w-lg font-light italic">
               {t('heroDesc')}
             </motion.p>
             
-            <motion.div variants={fadeInUp} className="flex flex-wrap gap-4">
-               <NavLink to="/tools" className="group flex items-center gap-2 bg-zeina-600 text-white px-8 py-4 rounded-full font-medium transition-all hover:bg-zeina-700 hover:shadow-lg hover:shadow-zeina-300/40">
-                  {t('ctaFreeCheck')} <ArrowUpRight className={`transition-transform ${dir === 'rtl' ? 'group-hover:-rotate-45' : 'group-hover:rotate-45'}`} />
+            <motion.div variants={fadeInUp} className="flex flex-wrap gap-6">
+               <NavLink to="/quiz" className="group flex items-center gap-4 bg-zeina-600 text-white px-12 py-6 rounded-full font-bold hover:bg-zeina-700 transition-all shadow-[0_25px_50px_-12px_rgba(204,51,102,0.3)]">
+                  {t('ctaFreeCheck')} <ArrowUpRight size={24} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                </NavLink>
-               <NavLink to="/about" className="flex items-center gap-2 bg-white text-slate-700 border border-slate-200 px-8 py-4 rounded-full font-medium transition-all hover:bg-slate-50 hover:border-slate-300">
+               <NavLink to="/about" className="flex items-center gap-2 bg-white text-slate-800 border border-slate-200 px-12 py-6 rounded-full font-bold hover:bg-slate-50 transition-all">
                   {t('ctaMission')}
                </NavLink>
-            </motion.div>
-
-            <motion.div variants={fadeInUp} className="mt-12 flex items-center gap-6">
-               <div className="flex -space-x-4 rtl:space-x-reverse">
-                  {/* Testimonial Avatars */}
-                  <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=100" className="w-12 h-12 rounded-full border-4 border-white object-cover" alt="user" />
-                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100" className="w-12 h-12 rounded-full border-4 border-white object-cover" alt="user" />
-                  <img src="https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?auto=format&fit=crop&q=80&w=100" className="w-12 h-12 rounded-full border-4 border-white object-cover" alt="user" />
-                  <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=100" className="w-12 h-12 rounded-full border-4 border-white object-cover" alt="user" />
-               </div>
-               <div>
-                  <div className="flex items-center gap-1 text-yellow-400">
-                     {[1,2,3,4,5].map(i => <Star key={i} size={16} fill="currentColor" />)}
-                  </div>
-                  <p className="text-sm text-slate-500 font-medium">{t('trustedBy')}</p>
-               </div>
             </motion.div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
+            style={{ y: heroY, scale: heroScale }}
+            initial={{ opacity: 0, x: 100, rotate: 5 }}
+            animate={{ opacity: 1, x: 0, rotate: 0 }}
+            transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
             className="relative"
           >
-            <div className="relative rounded-[3rem] overflow-hidden shadow-2xl shadow-zeina-100 bg-slate-100">
-               {/* Updated Hero Image: Warm, confident professional woman in hijab */}
-               <img src="https://images.unsplash.com/photo-1629425733761-caae3b5f2e50?auto=format&fit=crop&q=80&w=1000" alt="Arab Woman Professional in Hijab" className="w-full h-full object-cover aspect-[4/5]" />
+            <div className="relative rounded-[5rem] overflow-hidden shadow-[0_80px_150px_-30px_rgba(0,0,0,0.2)] bg-white aspect-[4/5.5] border-[16px] border-white">
+               <img 
+                 src="https://images.unsplash.com/photo-1559839734-2b71f1536783?q=80&w=2070&auto=format&fit=crop" 
+                 alt="Premium Care" 
+                 className="w-full h-full object-cover grayscale-[30%] hover:grayscale-0 transition-all duration-[2s]" 
+               />
+               <div className="absolute inset-0 bg-gradient-to-t from-zeina-900/30 via-transparent to-transparent" />
                
-               {/* Floating Card */}
+               {/* Floating Glass Widget */}
                <motion.div 
-                 initial={{ y: 50, opacity: 0 }}
-                 whileInView={{ y: 0, opacity: 1 }}
-                 transition={{ delay: 0.5, duration: 0.5 }}
-                 className="absolute bottom-8 right-8 rtl:right-auto rtl:left-8 bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-xl max-w-xs"
+                 animate={{ y: [0, -20, 0], x: [0, 10, 0] }}
+                 transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                 className="absolute bottom-12 -left-12 glass-card p-10 rounded-[3rem] shadow-2xl max-w-[320px]"
                >
-                  <div className="flex items-start justify-between mb-4">
-                     <div>
-                        <h3 className="text-3xl font-bold font-serif text-slate-900">7+</h3>
-                        <p className="text-xs text-slate-500 uppercase tracking-wide">{t('yearsService')}</p>
+                  <div className="flex items-center gap-5 mb-5">
+                     <div className="bg-zeina-600 p-4 rounded-2xl shadow-lg">
+                        <Activity className="text-white w-7 h-7" />
                      </div>
-                     <div className="bg-zeina-100 p-2 rounded-full">
-                        <Star className="text-zeina-600 w-5 h-5" />
+                     <div>
+                        <div className="text-[11px] font-black text-zeina-700 uppercase tracking-[0.3em] mb-1">Wellness Sync</div>
+                        <div className="text-xl font-serif font-bold text-slate-900">Health Audit</div>
                      </div>
                   </div>
-                  <p className="text-sm text-slate-700">{t('awardWinning')}</p>
+                  <div className="h-2 w-full bg-slate-100 rounded-full mb-5 overflow-hidden">
+                     <motion.div 
+                        initial={{ width: 0 }}
+                        whileInView={{ width: '92%' }}
+                        transition={{ duration: 2.5, delay: 0.8 }}
+                        className="h-full bg-zeina-500"
+                     />
+                  </div>
+                  <p className="text-sm text-slate-500 leading-relaxed font-medium italic">Empowering your choices through precision metrics.</p>
                </motion.div>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* PARTNERS / TRUST */}
-      <section className="py-10 border-y border-slate-100 bg-white">
-         <div className="max-w-7xl mx-auto px-6">
-            <p className="text-center text-slate-400 text-sm mb-8 tracking-widest uppercase">{t('certifiedBy')}</p>
-            <div className="flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-               {['Ministry of Health', 'Saudi German Health', 'King Faisal Hospital', 'WHO'].map((brand, i) => (
-                  <h3 key={i} className="text-xl md:text-2xl font-serif font-bold text-slate-800 text-center">{brand}</h3>
-               ))}
-            </div>
-         </div>
+      {/* CURATED SERVICES WITH STAGGERED REVEAL */}
+      <section className="py-56 relative z-20">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            className="text-center mb-40"
+          >
+            <h2 className="text-7xl md:text-8xl font-serif font-black text-slate-900 mb-10 tracking-tighter">{t('ourServices')}</h2>
+            <p className="text-2xl text-slate-400 font-light max-w-2xl mx-auto italic">{t('servicesPageDesc')}</p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-16">
+            {services.map((service, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 60 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 1, delay: i * 0.2 }}
+                className="p-14 rounded-[4rem] bg-white border border-slate-50 hover:border-zeina-100 hover:shadow-[0_60px_100px_-30px_rgba(204,51,102,0.15)] transition-all group relative overflow-hidden"
+              >
+                <div className="bg-zeina-50 w-24 h-24 rounded-[2rem] flex items-center justify-center mb-12 group-hover:bg-zeina-600 transition-all duration-700">
+                  <service.icon className="text-zeina-600 group-hover:text-white group-hover:scale-110 transition-transform" size={42} />
+                </div>
+                
+                <h3 className="text-4xl font-serif font-bold text-slate-900 mb-8 tracking-tight">{service.title}</h3>
+                <p className="text-xl text-slate-500 leading-relaxed font-light mb-12">{service.description}</p>
+                
+                <NavLink to={service.link} className="text-zeina-600 font-black uppercase tracking-[0.3em] text-[10px] flex items-center gap-4 group-hover:gap-6 transition-all">
+                   {t('learnMore')} <ArrowRight size={20} />
+                </NavLink>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </section>
 
-      {/* SERVICES SECTION */}
-      <section className="py-24 bg-gradient-to-b from-white to-warm-50/50">
-         <div className="max-w-7xl mx-auto px-6">
-            <div className="grid lg:grid-cols-2 gap-16 items-start">
-               <div className="sticky top-32">
-                  <motion.h2 
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="text-4xl lg:text-5xl font-serif font-bold text-slate-900 mb-6 whitespace-pre-line"
-                  >
-                    {t('servicesTitle')}
-                  </motion.h2>
-                  <p className="text-slate-600 leading-relaxed mb-8 text-lg">
-                    {t('servicesDesc')}
-                  </p>
-                  <NavLink to="/services" className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-zeina-600 text-white hover:scale-110 transition-transform shadow-lg">
-                     <ArrowRight size={24} className={dir === 'rtl' ? 'rotate-180' : ''} />
-                  </NavLink>
-               </div>
+      {/* SPECIALISTS SECTION */}
+      <section className="py-56 bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-40 gap-16">
+            <motion.div 
+              initial={{ opacity: 0, x: -60 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1 }}
+            >
+              <h2 className="text-7xl md:text-8xl font-serif font-black text-slate-900 mb-10 tracking-tighter">{t('meetSpecialists')}</h2>
+              <p className="text-2xl text-slate-400 font-light italic">{t('specialistsDesc')}</p>
+            </motion.div>
+            <NavLink to="/experts" className="group flex items-center gap-6 text-zeina-600 font-black uppercase tracking-[0.4em] text-[10px] border-b-2 border-zeina-100 pb-5 hover:border-zeina-500 transition-all">
+              {t('viewAllExperts')} <ArrowRight size={24} className={dir === 'rtl' ? 'rotate-180' : ''} />
+            </NavLink>
+          </div>
 
-               <div className="space-y-8">
-                  {services.map((service, idx) => (
-                     <motion.div
-                       key={idx}
-                       initial={{ opacity: 0, y: 30 }}
-                       whileInView={{ opacity: 1, y: 0 }}
-                       viewport={{ once: true }}
-                       transition={{ delay: idx * 0.1 }}
-                       className="bg-white p-8 rounded-3xl shadow-lg hover:shadow-xl transition-shadow border border-slate-50 group"
-                     >
-                        <div className="bg-zeina-50 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-zeina-600 transition-colors">
-                           <service.icon className="text-zeina-600 group-hover:text-white transition-colors" size={28} />
-                        </div>
-                        <h3 className="text-2xl font-bold text-slate-900 mb-3">{service.title}</h3>
-                        <p className="text-slate-500 leading-relaxed mb-6">{service.description}</p>
-                        <NavLink to={service.link} className="text-sm font-semibold text-zeina-600 flex items-center gap-1 group-hover:gap-2 transition-all">
-                           {t('learnMore')} <ArrowRight size={16} className={dir === 'rtl' ? 'rotate-180' : ''} />
-                        </NavLink>
-                     </motion.div>
-                  ))}
-               </div>
-            </div>
-         </div>
+          <div className="grid md:grid-cols-3 gap-20">
+            {experts.slice(0,3).map((expert, i) => (
+              <motion.div
+                key={expert.id}
+                initial={{ opacity: 0, scale: 0.85 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1.2, delay: i * 0.2 }}
+                className="group flex flex-col items-center text-center"
+              >
+                 <div className="aspect-[3/4.5] w-full rounded-[5rem] overflow-hidden mb-12 relative shadow-[0_40px_80px_-20px_rgba(0,0,0,0.2)]">
+                    <img src={expert.image} className="w-full h-full object-cover transition-transform duration-[3s] group-hover:scale-110 grayscale-[40%] group-hover:grayscale-0" alt={expert.name} />
+                    <div className="absolute top-10 right-10 glass-card px-6 py-3 rounded-2xl flex items-center gap-2 shadow-xl">
+                       <Star className="text-yellow-500 fill-current" size={18} />
+                       <span className="font-black text-sm text-slate-800">{expert.rating}</span>
+                    </div>
+                 </div>
+                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zeina-500 mb-5">{expert.category}</span>
+                 <h3 className="text-5xl font-serif font-bold text-slate-900 mb-4">{expert.name}</h3>
+                 <p className="text-slate-400 text-xl font-light italic mb-12">{expert.title}</p>
+                 <NavLink to={`/book/${expert.id}`} className="bg-slate-900 text-white px-14 py-6 rounded-full font-bold text-sm hover:bg-zeina-600 transition-all shadow-2xl hover:-translate-y-1">
+                    {t('bookConsultation')}
+                 </NavLink>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </section>
 
-      {/* BIG IMAGE / CTA */}
-      <section className="py-20 px-6">
-         <div className="max-w-7xl mx-auto rounded-[3rem] overflow-hidden relative min-h-[500px] flex items-center">
-            {/* New Big Feature Image: Wellness Lifestyle */}
-            <img src="https://images.unsplash.com/photo-1544367563-12123d8965cd?auto=format&fit=crop&q=80&w=2000" className="absolute inset-0 w-full h-full object-cover" alt="Saudi Woman Lifestyle" />
-            <div className={`absolute inset-0 bg-gradient-to-r ${dir === 'rtl' ? 'from-transparent to-slate-900/80' : 'from-slate-900/80 to-transparent'}`} />
-            
-            <div className="relative z-10 max-w-2xl p-12 lg:p-20 text-white">
-               <h2 className="text-4xl lg:text-5xl font-serif font-bold mb-6">{t('bigImageTitle')}</h2>
-               <p className="text-slate-200 text-lg mb-8">
-                  {t('bigImageDesc')}
-               </p>
-               <NavLink to="/contact" className="bg-white text-slate-900 px-8 py-4 rounded-full font-medium hover:bg-zeina-50 transition-colors inline-block">
-                  {t('ctaStartJourney')}
-               </NavLink>
-            </div>
-         </div>
-      </section>
-
-      {/* EXPERTS PREVIEW */}
-      <section className="py-24 bg-zeina-50/50">
-         <div className="max-w-7xl mx-auto px-6">
-             <div className="flex justify-between items-end mb-16">
-               <div>
-                  <h2 className="text-4xl font-serif font-bold text-slate-900 mb-4">{t('meetSpecialists')}</h2>
-                  <p className="text-slate-500">{t('specialistsDesc')}</p>
-               </div>
-               <NavLink to="/experts" className="hidden md:flex items-center gap-2 text-slate-900 font-medium hover:text-zeina-600 transition-colors">
-                  {t('viewAllExperts')} <ArrowRight size={18} className={dir === 'rtl' ? 'rotate-180' : ''} />
-               </NavLink>
-             </div>
-
-             <div className="grid md:grid-cols-3 gap-8">
-                {experts.slice(0,3).map((expert, i) => (
-                   <motion.div
-                     key={expert.id}
-                     initial={{ opacity: 0, y: 20 }}
-                     whileInView={{ opacity: 1, y: 0 }}
-                     viewport={{ once: true }}
-                     transition={{ delay: i * 0.1 }}
-                     className="bg-white rounded-3xl p-4 shadow-sm hover:shadow-lg transition-all"
-                   >
-                      <div className="relative aspect-square rounded-2xl overflow-hidden mb-6 bg-slate-100">
-                         <img src={expert.image} alt={expert.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-                         <div className="absolute top-4 right-4 rtl:right-auto rtl:left-4 bg-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm">
-                            <Star size={12} className="text-yellow-400 fill-current" /> {expert.rating}
-                         </div>
-                      </div>
-                      <div className="px-2 pb-2">
-                         <span className="text-xs font-semibold text-zeina-600 uppercase tracking-wider">{expert.category}</span>
-                         <h3 className="text-xl font-bold text-slate-900 mt-2">{expert.name}</h3>
-                         <p className="text-slate-500 text-sm mb-4">{expert.title}</p>
-                         <button className="w-full border border-slate-200 py-3 rounded-xl font-medium hover:bg-slate-900 hover:text-white transition-colors">
-                            {t('bookConsultation')}
-                         </button>
-                      </div>
-                   </motion.div>
-                ))}
-             </div>
-         </div>
+      {/* FINAL CTA MISSION */}
+      <section className="py-64 bg-zeina-600 relative overflow-hidden">
+        <motion.div 
+           animate={{ rotate: 360 }}
+           transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+           className="absolute top-[-30%] left-[-20%] w-[1200px] h-[1200px] border border-white/5 rounded-full pointer-events-none" 
+        />
+        <div className="max-w-5xl mx-auto px-6 text-center relative z-10 text-white">
+           <motion.h2 
+             initial={{ opacity: 0, scale: 0.9 }}
+             whileInView={{ opacity: 1, scale: 1 }}
+             viewport={{ once: true }}
+             className="text-7xl md:text-9xl font-serif font-black mb-16 tracking-tighter leading-none"
+           >
+             Empowering your journey, every step of the way.
+           </motion.h2>
+           <p className="text-3xl text-white/70 font-light mb-20 italic max-w-3xl mx-auto">Discover the intersection of medical science and human empathy.</p>
+           <div className="flex flex-wrap justify-center gap-8">
+              <NavLink to="/register" className="bg-white text-zeina-600 px-16 py-7 rounded-full font-black uppercase tracking-widest text-xs hover:bg-warm-50 transition-all shadow-2xl">
+                 Join the Platform
+              </NavLink>
+              <NavLink to="/contact" className="bg-transparent border-2 border-white/20 text-white px-16 py-7 rounded-full font-black uppercase tracking-widest text-xs hover:bg-white/10 transition-all">
+                 Inquire Directly
+              </NavLink>
+           </div>
+        </div>
       </section>
     </div>
   );
